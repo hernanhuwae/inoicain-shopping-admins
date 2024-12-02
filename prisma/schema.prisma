@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model store {
+  id        String      @id @default(uuid())
+  name      String
+  userId    String
+  createAt  DateTime    @default(now())
+  updateAt  DateTime    @updatedAt
+  Billboard Billboard[]
+  Category  Category[]
+  Size      Size[]
+  Colour    Colour[]
+  Product   Product[]
+  Order     Order[]
+}
+
+model Billboard {
+  id       String     @id @default(uuid())
+  storeId  String
+  stores   store      @relation(fields: [storeId], references: [id])
+  label    String
+  imageUrl String
+  createAt DateTime   @default(now())
+  updateAt DateTime   @updatedAt
+  Category Category[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  createAt    DateTime  @default(now())
+  updateAt    DateTime  @updatedAt
+  storeId     String
+  billboardId String
+  store       store     @relation(fields: [storeId], references: [id])
+  billboard   Billboard @relation(fields: [billboardId], references: [id])
+  Product     Product[]
+}
+
+model Size {
+  id       String    @id @default(uuid())
+  name     String
+  value    String
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  storeId  String
+  Store    store     @relation(fields: [storeId], references: [id])
+  Product  Product[]
+}
+
+model Colour {
+  id       String    @id @default(uuid())
+  name     String
+  value    String
+  createAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt
+  storeId  String
+  Store    store     @relation(fields: [storeId], references: [id])
+  Product  Product[]
+}
+
+model Product {
+  id         String      @id @default(uuid())
+  name       String
+  price      Decimal
+  createAt   DateTime    @default(now())
+  updateAt   DateTime    @updatedAt
+  isArchieve Boolean     @default(false)
+  isFeatured Boolean     @default(false)
+  storeId    String
+  Store      store       @relation(fields: [storeId], references: [id])
+  categoryId String
+  Category   Category    @relation(fields: [categoryId], references: [id])
+  sizeId     String
+  Size       Size        @relation(fields: [sizeId], references: [id])
+  colourId   String
+  Colour     Colour      @relation(fields: [colourId], references: [id])
+  images     Image[]
+  OrderItem  OrderItem[]
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  phone     String      @default("")
+  address   String      @default("")
+  isPaid    Boolean     @default(false)
+  storeId   String
+  Store     store       @relation(fields: [storeId], references: [id])
+  createAt  DateTime    @default(now())
+  updateAt  DateTime    @updatedAt
+  OrderItem OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  Order     Order   @relation(fields: [orderId], references: [id])
+  Product   Product @relation(fields: [productId], references: [id])
+}
